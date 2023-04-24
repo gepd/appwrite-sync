@@ -581,7 +581,7 @@ var AppwriteSync = (function () {
                         targetDocument = targetDocumentMap.get(sourceDocument.$id);
                         $id = sourceDocument.$id, $collectionId = sourceDocument.$collectionId, $databaseId = sourceDocument.$databaseId, $createdAt = sourceDocument.$createdAt, $permissions = sourceDocument.$permissions, $updatedAt = sourceDocument.$updatedAt, documentData = __rest(sourceDocument, ["$id", "$collectionId", "$databaseId", "$createdAt", "$permissions", "$updatedAt"]);
                         if (!!targetDocument) return [3, 11];
-                        console.log("--- creating", $id);
+                        console.info("--- creating", $id);
                         return [4, target.createDocument(database.$id, collection.$id, $id, documentData, $permissions)];
                     case 10:
                         _g.sent();
@@ -589,7 +589,7 @@ var AppwriteSync = (function () {
                     case 11:
                         documentsMatch = compareDocuments(sourceDocument, targetDocument);
                         if (!!documentsMatch) return [3, 13];
-                        console.log("--- updating", $id);
+                        console.info("--- updating", $id);
                         return [4, target.updateDocument(database.$id, collection.$id, $id, documentData)];
                     case 12:
                         _g.sent();
