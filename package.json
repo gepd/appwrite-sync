@@ -1,0 +1,15 @@
+{
+  "name": "appwrite-sync",
+  "version": "0.1.0",
+  "description": "Sync two appwrite instances",
+  "main": "index.ts",
+  "repository": "https://github.com/gepd/appwrite-sync",
+  "author": "gepd",
+  "license": "MIT",
+  "dependencies": {
+    "node-appwrite": "^8.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.0"
+  }
+}
