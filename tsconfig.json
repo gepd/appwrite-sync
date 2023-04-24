@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "removeComments": true,
+    "baseUrl": "./",
+    "outDir": "./dist"
+  },
+  "include": ["./src/*"]
+}
