@@ -8,9 +8,11 @@ Note: this is a comunity project and isn't maintained by appwrite
 
 ### How to use it
 
-1. run `yarn install`
+1. Clone this repository
 
-2. To make it work you need to initialize the `AppwriteSync` class like this
+2. run `yarn install`
+
+3. To make it work you need to initialize the `AppwriteSync` class like this
 
 ```ts
 // index.ts
@@ -43,7 +45,7 @@ app.sync({
 
 You can change each option to false to start to sync.
 
-3. finally, you must have instaled `tsc` to compile and run the code, use `tsc&&node ./dist/index.js`
+4. finally, you must have instaled `tsc` to compile and run the code, use `tsc&&node ./dist/index.js`
 
 ### License
 
