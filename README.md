@@ -45,7 +45,11 @@ app.sync({
 
 You can change each option to false to start to sync.
 
-4. finally, you must have instaled `tsc` to compile and run the code, use `tsc&&node ./dist/index.js`
+4. finally run `node ./dist/index.js`
+
+### Development
+
+if you update any typescipt file re-compile the code with the `tsc` command (you need to install typescript), after this run `node ./dist/index.js` again
 
 ### License
 
