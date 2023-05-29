@@ -429,96 +429,103 @@ export class AppwriteSync {
           query.push(Query.cursorAfter(lastId));
         }
 
-        // Fetch documents from the source collection
-        const responseSourceDocuments = await source.listDocuments(
-          database.$id,
-          collection.$id,
-          query
-        );
+        let totalSource = 0;
 
-        sourceDocuments = responseSourceDocuments.documents;
-
-        const sourceDocumentIds = sourceDocuments.map(
-          (doc: Models.Document) => doc.$id
-        );
-
-        // Fetch matching documents from the destination collection
-        let targetDocuments: Models.Document[] = [];
-
-        if (sourceDocumentIds.length > 0) {
-          const responseTargetDocuments = await target.listDocuments(
+        do {
+          console.info(`--- quering: ${limit} items`);
+          // Fetch documents from the source collection
+          const responseSourceDocuments = await source.listDocuments(
             database.$id,
             collection.$id,
-            [Query.equal("$id", sourceDocumentIds)]
+            query
           );
 
-          targetDocuments = responseTargetDocuments.documents;
-        }
+          totalSource = responseSourceDocuments.documents.length;
 
-        // Create a Map with the destination documents using document ID as key
-        const targetDocumentMap: Map<string, any> = new Map();
+          sourceDocuments = responseSourceDocuments.documents;
 
-        for (const targetDoc of targetDocuments) {
-          targetDocumentMap.set(targetDoc.$id, targetDoc);
-        }
+          const sourceDocumentIds = sourceDocuments.map(
+            (doc: Models.Document) => doc.$id
+          );
 
-        // Iterate through source documents and sync with the destination documents
-        for (const sourceDocument of sourceDocuments) {
-          console.info(`--- syncing document ${sourceDocument.$id}`);
+          // Fetch matching documents from the destination collection
+          let targetDocuments: Models.Document[] = [];
 
-          const targetDocument = targetDocumentMap.get(sourceDocument.$id);
-          // Create document if it doesn't exist in the destination
-          // calling $collectionId, $databaseId, $createdAt, $permissions,
-          // $updatedAt to avoid 'unknown attribute' error
-          const {
-            $id,
-            $collectionId,
-            $databaseId,
-            $createdAt,
-            $permissions,
-            $updatedAt,
-            ...documentData
-          } = sourceDocument;
-
-          if (!targetDocument) {
-            console.info("--- creating", $id);
-
-            Object.keys(documentData).forEach((key) => {
-              try {
-                if ("$databaseId" in documentData[key]) {
-                  documentData[key] = documentData[key]["$id"];
-                }
-              } catch {}
-            });
-
-            await target.createDocument(
+          if (sourceDocumentIds.length > 0) {
+            const responseTargetDocuments = await target.listDocuments(
               database.$id,
               collection.$id,
-              $id,
-              documentData,
-              $permissions
-            );
-          } else {
-            // Compare the source and destination documents, update if necessary
-            const documentsMatch = compareDocuments(
-              sourceDocument,
-              targetDocument
+              [Query.equal("$id", sourceDocumentIds)]
             );
 
-            if (!documentsMatch) {
-              console.info("--- updating", $id);
-              // Update the document in the destination
-              await target.updateDocument(
+            targetDocuments = responseTargetDocuments.documents;
+          }
+
+          // Create a Map with the destination documents using document ID as key
+          const targetDocumentMap: Map<string, any> = new Map();
+
+          for (const targetDoc of targetDocuments) {
+            targetDocumentMap.set(targetDoc.$id, targetDoc);
+          }
+
+          // Iterate through source documents and sync with the destination documents
+          for (const sourceDocument of sourceDocuments) {
+            console.info(`--- syncing document ${sourceDocument.$id}`);
+
+            const targetDocument = targetDocumentMap.get(sourceDocument.$id);
+            // Create document if it doesn't exist in the destination
+            // calling $collectionId, $databaseId, $createdAt, $permissions,
+            // $updatedAt to avoid 'unknown attribute' error
+            const {
+              $id,
+              $collectionId,
+              $databaseId,
+              $createdAt,
+              $permissions,
+              $updatedAt,
+              ...documentData
+            } = sourceDocument;
+
+            if (!targetDocument) {
+              console.info("--- creating", $id);
+
+              Object.keys(documentData).forEach((key) => {
+                try {
+                  if ("$databaseId" in documentData[key]) {
+                    documentData[key] = documentData[key]["$id"];
+                  }
+                } catch {}
+              });
+
+              await target.createDocument(
                 database.$id,
                 collection.$id,
                 $id,
-                documentData
+                documentData,
+                $permissions
               );
+            } else {
+              // Compare the source and destination documents, update if necessary
+              const documentsMatch = compareDocuments(
+                sourceDocument,
+                targetDocument
+              );
+
+              if (!documentsMatch) {
+                console.info("--- updating", $id);
+                // Update the document in the destination
+                await target.updateDocument(
+                  database.$id,
+                  collection.$id,
+                  $id,
+                  documentData
+                );
+              }
             }
           }
-        }
 
-        lastId = sourceDocumentIds[sourceDocuments.length - 1];
+          lastId = sourceDocumentIds[sourceDocuments.length - 1];
+        } while (totalSource === limit);
       }
     }
   }
