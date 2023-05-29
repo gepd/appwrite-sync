@@ -298,9 +298,8 @@ export class AppwriteSync {
                     sourceAttribute.relationType,
                     sourceAttribute.twoWay,
                     sourceAttribute.key,
-                    sourceAttribute.required,
-                    sourceAttribute.default,
-                    sourceAttribute.array
+                    sourceAttribute.twoWayKey,
+                    sourceAttribute.onDelete
                   );
                   break;
                 case "integer":
