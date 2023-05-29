@@ -331,7 +331,7 @@ export class AppwriteSync {
         }
       }
     } catch (error) {
-      return Promise.reject(`Error syncing attributes: ${error}`);
+      return console.error(error);
     }
   }
 
