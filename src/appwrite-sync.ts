@@ -418,20 +418,21 @@ export class AppwriteSync {
       console.info(`\n- database: ${database.$id}`);
 
       for (const collection of this.sourceCollectionsList[database.$id]) {
+        let totalSource = 0;
         // start and reset cursor Id
         let lastId: string | undefined = undefined;
 
         console.info(`-- collection: ${collection.$id}`);
-        let query = [Query.limit(limit)];
-
-        console.info(`--- lastId: ${lastId}`);
-        if (lastId) {
-          query.push(Query.cursorAfter(lastId));
-        }
-
-        let totalSource = 0;
 
         do {
+          let query = [Query.limit(limit)];
+
+          console.info(`--- lastId: ${lastId}`);
+
+          if (lastId) {
+            query.push(Query.cursorAfter(lastId));
+          }
+
           console.info(`--- quering: ${limit} items`);
           // Fetch documents from the source collection
           const responseSourceDocuments = await source.listDocuments(
@@ -440,13 +441,12 @@ export class AppwriteSync {
             query
           );
 
-          totalSource = responseSourceDocuments.documents.length;
-
           sourceDocuments = responseSourceDocuments.documents;
+          totalSource = sourceDocuments.length;
 
-          const sourceDocumentIds = sourceDocuments.map(
-            (doc: Models.Document) => doc.$id
-          );
+          const sourceDocumentIds = sourceDocuments.map((doc) => doc.$id);
+
+          lastId = sourceDocumentIds.at(-1);
 
           // Fetch matching documents from the destination collection
           let targetDocuments: Models.Document[] = [];
@@ -486,16 +486,16 @@ export class AppwriteSync {
               ...documentData
             } = sourceDocument;
 
+            Object.keys(documentData).forEach((key) => {
+              try {
+                if ("$databaseId" in documentData[key]) {
+                  documentData[key] = documentData[key]["$id"];
+                }
+              } catch {}
+            });
+
             if (!targetDocument) {
               console.info("--- creating", $id);
-
-              Object.keys(documentData).forEach((key) => {
-                try {
-                  if ("$databaseId" in documentData[key]) {
-                    documentData[key] = documentData[key]["$id"];
-                  }
-                } catch {}
-              });
 
               await target.createDocument(
                 database.$id,
@@ -523,8 +523,6 @@ export class AppwriteSync {
               }
             }
           }
-
-          lastId = sourceDocumentIds[sourceDocuments.length - 1];
         } while (totalSource === limit);
       }
     }
