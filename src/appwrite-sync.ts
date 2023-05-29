@@ -482,6 +482,15 @@ export class AppwriteSync {
 
           if (!targetDocument) {
             console.info("--- creating", $id);
+
+            Object.keys(documentData).forEach((key) => {
+              try {
+                if ("$databaseId" in documentData[key]) {
+                  documentData[key] = documentData[key]["$id"];
+                }
+              } catch {}
+            });
+
             await target.createDocument(
               database.$id,
               collection.$id,
